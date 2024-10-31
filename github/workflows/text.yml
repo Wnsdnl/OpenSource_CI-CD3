@@ -1,0 +1,45 @@
+name: Generate and Upload Artifact
+
+on: 
+  push:
+    branches:
+      - master
+    #paths: 경로 설정 가능
+    #  - ./data/*
+    #paths-ignore: # 무시되는 경로도 설정 가능.
+    #  - ./src/*
+    
+
+jobs:
+  generate-file: # 첫번째 job
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Run create_txt script
+        run: python create_txt.py
+
+      - name: Upload data.txt as artifact
+        uses: actions/upload-artifact@v4 # artifact를 업로드 하겠다!
+        with:
+          name: data-file # artifact 이름
+          path: data.txt # artifact 업로드 경로
+
+  download-file: # 두번째 job
+    needs: generate-file # generate-file job이 먼저 실행
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Get Artifact
+        uses: actions/download-artifact@v4 # artifact를 다운 받겠다 !
+        with:
+          name: data-file
+      - name: Print data.txt
+        run: cat data.txt
